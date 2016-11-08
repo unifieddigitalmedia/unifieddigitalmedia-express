@@ -45,43 +45,11 @@ app.use(bodyParser.json());
 app.post('/api/businesscontact/:name:email:subject:message', function (req, res) {
 
 
-
-
- var transporter = nodemailer.createTransport({
-        service: 'hotmail',
-        auth: {
-            user: 'machelslack@hotmail.com', // Your email id
-            pass: '321123ETz@' // Your password
-        }
-    });
-
- var text = 'Hello world from \n\n' + req.body.firm;
-
-
-var mailOptions = {
-    from: 'machelslack@hotmail.com', // sender address
-    to: 'machelslack@hotmail.com', // list of receivers
-    subject: 'Email Example', // Subject line
-    text: "hello world" //, // plaintext body
-    // html: '<b>Hello world ✔</b>' // You can choose to send an HTML body instead
-};
-
-
-transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-     
-      return error;
-      
-    }else{
-     
-       db.collection('businesscontacts').insertOne( { "businessname":req.body.firm,"businesswebsite":req.body.website,"businessemail":req.body.email,"businesscontact":req.body.name,"typeofactivity":req.body.services}, function(err, result) {
+db.collection('businesscontacts').insertOne( { "businessname":req.body.firm,"businesswebsite":req.body.website,"businessemail":req.body.email,"businesscontact":req.body.name,"typeofactivity":req.body.services}, function(err, result) {
  
-    res.send("Inserted a document into the business inquiries collection.");
+    res.send("Inserted a document into the hotel collection.");
    
   });
-
-    };
-});
 
 
 });
@@ -136,7 +104,7 @@ db.collection('placesofinterest').insert([{
   "enabled":""}], function(err, result) {
  
  console.log(result);
-    res.json({"ERROR":"Inserted a document into the business inquiries collection."});
+    res.json({"ERROR":"Inserted a document into the hotel collection."});
    
   });
 
@@ -148,53 +116,106 @@ var mandrill_client = require('node-mandrill')('fix_HqmjREpZnCAHR_Dhaw');
 
 app.post('/api/queryLog/:name:email:subject:message', function (req, res) {
 
-
-console.log("this is a message");
-
-
- var transporter = nodemailer.createTransport({
-        service: 'hotmail',
-        auth: {
-            user: 'machelslack@hotmail.com', // Your email id
-            pass: '321123ETz@' // Your password
-        }
-    });
-
- var text = req.body.subject + ' from - '+ req.body.name;
+var name = req.body.email;
 
 
-var mailOptions = {
-  
-    from: 'machelslack@hotmail.com', // sender address
-    to: 'machelslack@hotmail.com', // list of receivers
-    subject:text, // Subject line
-    text: req.body.message //, // plaintext body
-    // html: '<b>Hello world ✔</b>' // You can choose to send an HTML body instead
+var message = {
+    "html": "<p>Example HTML content</p>",
+    "text": req.body.message,
+    "subject": req.body.subject,
+    "from_email": "info@sinopiainn.com",
+    "from_name": req.body.name,
+    "to": [{
+            "email": "udigitallondon@hotmail.com",
+            "name": "Recipient Name",
+            "type": "to"
+        }],
+    "headers": {
+        "Reply-To": "message.reply@example.com"
+    },
+    "important": false,
+    "track_opens": null,
+    "track_clicks": null,
+    "auto_text": null,
+    "auto_html": null,
+    "inline_css": null,
+    "url_strip_qs": null,
+    "preserve_recipients": null,
+    "view_content_link": null,
+    "bcc_address": "message.bcc_address@example.com",
+    "tracking_domain": null,
+    "signing_domain": null,
+    "return_path_domain": null,
+    "merge": true,
+    "merge_language": "mailchimp",
+    "global_merge_vars": [{
+            "name": "merge1",
+            "content": "merge1 content"
+        }],
+    "merge_vars": [{
+            "rcpt": "recipient.email@example.com",
+            "vars": [{
+                    "name": "merge2",
+                    "content": "merge2 content"
+                }]
+        }],
+    "tags": [
+        "password-resets"
+    ],
+    "subaccount": "customer-123",
+    "google_analytics_domains": [
+        "example.com"
+    ],
+    "google_analytics_campaign": "message.from_email@example.com",
+    "metadata": {
+        "website": "www.example.com"
+    },
+    "recipient_metadata": [{
+            "rcpt": "recipient.email@example.com",
+            "values": {
+                "user_id": 123456
+            }
+        }],
+    "attachments": [{
+            "type": "text/plain",
+            "name": "myfile.txt",
+            "content": "ZXhhbXBsZSBmaWxl"
+        }],
+    "images": [{
+            "type": "image/png",
+            "name": "IMAGECID",
+            "content": "ZXhhbXBsZSBmaWxl"
+        }]
 };
+var async = false;
+var ip_pool = "Main Pool";
+var send_at = "2016-07-23 12:01:00";
 
 
-transporter.sendMail(mailOptions, function(error, info){
+mandrill_client.messages.send({"message": message}, function(result) {
 
-    if(error){
-      
-      return error;
+    console.log(result);
 
-    } else {
-    
-       db.collection('contacts').insertOne( { "name":req.body.name,"subject":req.body.subject,"message":req.body.message,"email":req.body.email}, function(err, result) {
- 
-    res.send("Inserted a document into the inquiries collection.");
-   
-  });
-
-    };
+    res.end();
+    /*
+    [{
+            "email": "recipient.email@example.com",
+            "status": "sent",
+            "reject_reason": "hard-bounce",
+            "_id": "abc123abc123abc123abc123abc123"
+        }]
+    */
+}, function(e) {
+    // Mandrill returns the error as an object with name and message keys
+    console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+    // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
+     res.end();
 });
 
 
 });
 
 
-var nodemailer = require('nodemailer');
 
 
 module.exports = app;
